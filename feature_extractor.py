@@ -72,10 +72,57 @@ class FeatureVector:
         self.max_ng = None
         self.pg_count = None
         self.ng_count = None
-    def to_list(self):
-        return [self.duration, self.max_y, self.max_y_pos, self.mean_y, self.sum_y, self.q25, self.q50, self.q75, self.std_y, self.peak_down, self.peak_none, self.peak_up, self.min_tbp_up, self.avg_tbp_up, self.max_tbp_up, self.min_amplitude, self.avg_amplitude, self.max_amplitude, self.min_ppd, self.avg_ppd, self.max_ppd, self.min_npd, self.avg_npd, self.max_npd, self.min_ps, self.mean_ps, self.max_ps, self.sum_ps, self.min_ns, self.mean_ns, self.max_ns, self.sum_ns, self.min_pg, self.avg_pg, self.max_pg, self.min_ng, self.avg_ng, self.max_ng, self.pg_count, self.ng_count]
+    def to_dict(self):
+        return {
+            "duration":self.duration, 
+            "may_y":self.max_y, 
+            "max_y_pos":self.max_y_pos, 
+            "mean_y":self.mean_y, 
+            "sum_y":self.sum_y, 
+            "q25":self.q25, 
+            "q50":self.q50, 
+            "q75":self.q75, 
+            "std_y":self.std_y, 
+            "peak_down":self.peak_down, 
+            "peak_none":self.peak_none, 
+            "peak_up":self.peak_up, 
+            "min_TBP_up":self.min_tbp_up, 
+            "avg_TBP_up":self.avg_tbp_up, 
+            "max_TBP_up":self.max_tbp_up, 
+            "min_amplitude":self.min_amplitude, 
+            "avg_amplitude":self.avg_amplitude, 
+            "max_amplitude":self.max_amplitude, 
+            "min_PPD":self.min_ppd, 
+            "avg_PPD":self.avg_ppd, 
+            "max_PPD":self.max_ppd, 
+            "min_NPD":self.min_npd, 
+            "avg_NPD":self.avg_npd, 
+            "max_NPD":self.max_npd, 
+            "min_PS":self.min_ps, 
+            "mean_PS":self.mean_ps, 
+            "max_PS":self.max_ps, 
+            "sum_PS":self.sum_ps, 
+            "min_NS":self.min_ns, 
+            "mean_NS":self.mean_ns, 
+            "max_NS":self.max_ns, 
+            "sum_NS":self.sum_ns, 
+            "min_PG":self.min_pg, 
+            "avg_PG":self.avg_pg, 
+            "max_PG":self.max_pg, 
+            "min_NG":self.min_ng, 
+            "avg_NG":self.avg_ng, 
+            "max_NG":self.max_ng, 
+            "PG_count":self.pg_count, 
+            "NG_count":self.ng_count
+            }
     def keys_order(self):
-        return ["duration", "max_y", "max_y_pos", "mean_y", "sum_y", "q25", "q50", "q75", "std_y", "peak_down", "peak_none", "peak_up", "min_tbp_up", "avg_tbp_up", "max_tbp_up", "min_amplitude", "avg_amplitude", "max_amplitude", "min_ppd", "avg_ppd", "max_ppd", "min_npd", "avg_npd", "max_npd", "min_ps", "mean_ps", "max_ps", "sum_ps", "min_ns", "mean_ns", "max_ns", "sum_ns", "min_pg", "avg_pg", "max_pg", "min_ng", "avg_ng", "max_ng", "pg_count", "ng_count"]
+        return sorted(self.to_dict().keys())
+
+class BadCSVFormat(Exception):
+    def __init__(self, m):
+        self.message = m
+    def __str__(self):
+        return self.message
 
 def extract_all_measures_from_file(log_file_path):
     line_num = 0
@@ -90,7 +137,7 @@ def extract_all_measures_from_file(log_file_path):
         for commit in csv_file_reader:
             line_num += 1
             if len(commit) != EXPECTED_CSV_COLUMNS:
-                raise ("line %i has an incorrect number of columns" % line_num)
+                raise BadCSVFormat("line %i has an incorrect number of columns" % line_num)
             current_integration_date = int(commit[INTEGRATOR_DATE])
             earliest_intergration_date = min([current_integration_date, earliest_intergration_date])
             latest_integration_date = max([current_integration_date, latest_integration_date])

@@ -13,7 +13,7 @@ def currentFileName():
 def generateGitLog(input_dir, output_file=None):
     proc = subprocess.run(["git", "--git-dir", "".join([input_dir, os.path.sep, ".git"]), "log", '--format="%H","%P","%an","%ae","%at","%cn","%ce","%ct"'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc.stderr:
-        return couldNotExtractFeatures()
+        return couldNotCloneRepo()
     if output_file is None:
         return proc.stdout
     with open(output_file, "wb") as file:
@@ -26,19 +26,30 @@ def cloneRepo(url, location):
 def features(args):
     if len(args) < 3:
         return mustIncludeRepoLocation()
-    if (len(args) < 4):
-        return mustIncludeOutputLocation()
-    repoDir = args[2]
-    output_file = args[3]
-    generateGitLog(repoDir, output_file)
-    arr = feature_extractor.extract_all_measures_from_file(output_file)
+    log_file = None
+    if args[2] == "-log_path":
+        log_file = args[3]
+        output_file = args[4]
+    else:
+        if len(args) < 4:
+            return mustIncludeOutputLocation()
+        repoDir = args[2]
+        output_file = args[3]
+        generateGitLog(repoDir, log_file)
+    print (log_file)
+
+    arr = feature_extractor.extract_all_measures_from_file(log_file)
     with open(output_file, "w") as file:
         csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE)
         ready_to_write_headers = ["measure"] + arr["integrations"].keys_order()
         csv_writer.writerow(ready_to_write_headers)
-        for measure in arr.keys():
+        for measure in sorted(arr.keys()):
             feature_vector = arr[measure]
-            ready_to_write_list = [measure] + feature_vector.to_list()
+            feature_vector_values = []
+            feature_vector_dict = feature_vector.to_dict()
+            for feature in sorted(feature_vector_dict.keys()):
+                feature_vector_values.append(feature_vector_dict[feature])
+            ready_to_write_list = [measure] + feature_vector_values
             csv_writer.writerow(ready_to_write_list)
     
 def clone(args):
@@ -84,10 +95,13 @@ def mustIncludeRepoUrl():
     print ("Error: must include repo url")
 
 def mustIncludeRepoLocation():
-    print ("Must include repo directory")
+    print ("Must include repo directory or log path")
 
 def showCloningMessage():
     print ("Cloning with Git")
+
+def couldNotCloneRepo():
+    print ("Could not clone the Repo")
 
 def couldNotExtractFeatures():
     print ("Could not extract features")
@@ -102,7 +116,6 @@ def operationComplete():
     print ("Done!")
 
 #MENU
-
 MENU_OPTIONS = {}
 MENU_OPTIONS["--help"] = help
 MENU_OPTIONS["-help"] = help
