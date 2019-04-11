@@ -28,10 +28,18 @@ def features(args):
         return mustIncludeRepoLocation()
     if (len(args) < 4):
         return mustIncludeOutputLocation()
+    if (len(args) < 5):
+        return mustIncludeGitLogLocation()
+    if (len(args) < 6):
+        return mustIncludeTSLocation()
+
     repoDir = args[2]
-    output_file = args[3]
-    generateGitLog(repoDir, output_file)
-    arr = feature_extractor.extract_all_measures_from_file(output_file)
+    output_git_file = args[3]
+    output_file = args[4]
+    output_ts_file = args[5]
+    if repoDir != "-log_file":
+        generateGitLog(repoDir, output_git_file)
+    arr = feature_extractor.extract_all_measures_from_file(output_git_file, output_ts_file)
     with open(output_file, "w") as file:
         csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE)
         ready_to_write_headers = ["measure"] + arr["integrations"].keys_order()
@@ -97,6 +105,12 @@ def mustIncludeRepoLogPath():
 
 def mustIncludeOutputLocation():
     print ("Must include file output location")
+
+def mustIncludeGitLogLocation():
+    print ("Must include git log file output location")
+
+def mustIncludeTSLocation():
+    print ("Must include time series file output location")
 
 def operationComplete():
     print ("Done!")
