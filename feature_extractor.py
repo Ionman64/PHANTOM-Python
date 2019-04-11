@@ -2,6 +2,7 @@ import csv
 import sys
 import statistics
 import math
+import os
 from datetime import datetime, timedelta
 
 EXPECTED_CSV_COLUMNS = 8
@@ -18,6 +19,7 @@ INTEGRATOR_DATE = 7
 PEAK_UP = 1
 PEAK_DOWN = -1
 PEAK_NONE = 0
+
 
 class UniqueDeveloperList:
     def __init__(self):
@@ -77,11 +79,11 @@ class FeatureVector:
     def keys_order(self):
         return ["duration", "max_y", "max_y_pos", "mean_y", "sum_y", "q25", "q50", "q75", "std_y", "peak_down", "peak_none", "peak_up", "min_tbp_up", "avg_tbp_up", "max_tbp_up", "min_amplitude", "avg_amplitude", "max_amplitude", "min_ppd", "avg_ppd", "max_ppd", "min_npd", "avg_npd", "max_npd", "min_ps", "mean_ps", "max_ps", "sum_ps", "min_ns", "mean_ns", "max_ns", "sum_ns", "min_pg", "avg_pg", "max_pg", "min_ng", "avg_ng", "max_ng", "pg_count", "ng_count"]
 
-def extract_all_measures_from_file(log_file_path):
+def extract_all_measures_from_file(log_file_path, time_series_file_path):
     line_num = 0
 
     earliest_intergration_date = sys.maxsize
-    latest_integration_date = 0;
+    latest_integration_date = 0
     earliest_author_date = sys.maxsize
     latest_author_date = 0
 
@@ -108,18 +110,20 @@ def extract_all_measures_from_file(log_file_path):
     
     integration_frequency_timeseries = [0]*total_weeks_integration
 
-    integrator_activity_count = [UniqueDeveloperList()]*total_weeks_integration
+    integrator_activity_count = [UniqueDeveloperList() for _ in range(total_weeks_integration)]
     integrator_activity_timeseries = [0]*total_weeks_integration
 
     commit_frequency_timeseries = [0]*total_weeks_commits
-    author_activity_count = [UniqueDeveloperList()]*total_weeks_commits
+    author_activity_count = [UniqueDeveloperList() for _ in range(total_weeks_commits)]
     author_activity_timeseries = [0]*total_weeks_commits
 
     merge_frequency_timeseries = [0]*total_weeks_integration
 
+
     with open(log_file_path, 'r', encoding="utf-8") as file:
         csv_file_reader = csv.reader(file, delimiter=',', quotechar='"')
         for commit in csv_file_reader:
+
             current_integration_date = commit[INTEGRATOR_DATE]
             integration_week_number = calculate_week_num(earliest_intergration_date, current_integration_date)
 
@@ -138,6 +142,25 @@ def extract_all_measures_from_file(log_file_path):
 
             if " " in commit[PARENT_HASHES]:
                 merge_frequency_timeseries[integration_week_number] += 1
+
+    week_timestamps = []
+    current_timestamp = get_monday_timestamp(earliest_author_date)
+    for i in range(total_weeks_commits):
+        current_timestamp = (datetime.fromtimestamp(current_timestamp) + timedelta(days=7)).timestamp()
+        week_timestamps.append(current_timestamp-1)
+
+    with open(time_series_file_path, "w") as file:
+        csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE)
+        csv_writer.writerow(['filename','date','merges','commits','integrations','commiters','integrators'])
+        for i, _ in enumerate(integration_frequency_timeseries):
+            csv_writer.writerow([os.path.basename(log_file_path), 
+                                datetime.fromtimestamp(week_timestamps[i]).strftime("%Y-%m-%d"), 
+                                merge_frequency_timeseries[i],
+                                commit_frequency_timeseries[i],
+                                integration_frequency_timeseries[i],
+                                author_activity_timeseries[i],
+                                integrator_activity_timeseries[i],
+                                ])
 
     integration_frequency_feature_vector = calculate_feature_vector_from_time_series(integration_frequency_timeseries)
     integrator_activity_feature_vector = calculate_feature_vector_from_time_series(integrator_activity_timeseries)
@@ -325,10 +348,12 @@ def find_quantile(data_set, quantile):
 
 def get_monday_timestamp(timestamp):
     current_date = datetime.fromtimestamp(timestamp)
-    current_date.replace(hour=0, minute=0, second=0, microsecond=0) #reset the seconds to 0
+    current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0) #reset the seconds to 0
     current_date = current_date - timedelta(days=current_date.weekday()) #gives you monday
     return current_date.timestamp()
 
 def calculate_week_num(base_time, week_time):
-    SECS_IN_WEEK = 604800
-    return int((int(week_time) - int(base_time)) / SECS_IN_WEEK)
+    base_datetime = datetime.fromtimestamp(int(base_time))
+    week_datetime = datetime.fromtimestamp(int(week_time)) 
+
+    return (week_datetime - base_datetime).days // 7
