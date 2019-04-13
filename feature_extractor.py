@@ -327,56 +327,111 @@ def detect_peaks_and_set_features(data_set, features):
     features.pg_count = len(positive_gradients)
     features.ng_count = len(negative_gradients)
 
-    features.min_pg = min(positive_gradients)
-    features.avg_pg = statistics.mean(positive_gradients)
-    features.max_pg = max(positive_gradients)
+    if len(positive_gradients) > 0:
+        features.min_pg = min(positive_gradients)
+        features.avg_pg = statistics.mean(positive_gradients)
+        features.max_pg = max(positive_gradients)
+        
+        features.pg_count = len(positive_gradients)
 
-    features.min_ng = min(negative_gradients)
-    features.avg_ng = statistics.mean(negative_gradients)
-    features.max_ng = max(negative_gradients)
+        features.min_pg = min(positive_gradients)
+        features.avg_pg = statistics.mean(positive_gradients)
+        features.max_pg = max(positive_gradients)
+    else:
+        features.min_pg = 0
+        features.avg_pg = 0
+        features.max_pg = 0
+        
+        features.pg_count = 0
+
+        features.min_pg = 0
+        features.avg_pg = 0
+        features.max_pg = 0
+    
+    if len(negative_gradients) > 0:
+        features.min_ng = min(negative_gradients)
+        features.avg_ng = statistics.mean(negative_gradients)
+        features.max_ng = max(negative_gradients)
+
+        features.ng_count = len(negative_gradients)
+
+        features.min_ng = min(negative_gradients)
+        features.avg_ng = statistics.mean(negative_gradients)
+        features.max_ng = max(negative_gradients)
+    else:
+        features.min_ng = 0
+        features.avg_ng = 0
+        features.max_ng = 0
+        
+        features.ng_count = 0
+
+        features.min_ng = 0
+        features.avg_ng = 0
+        features.max_ng = 0
 
     features.peak_up = peak_up
     features.peak_down = peak_down
     features.peak_none = peak_none
 
-    features.min_ps = min(ps_sequence)
-    features.mean_ps = statistics.mean(ps_sequence)
-    features.max_ps = max(ps_sequence)
-    features.sum_ps = sum(ps_sequence)
+    if len(ps_sequence) > 0:
+        features.min_ps = min(ps_sequence)
+        features.mean_ps = statistics.mean(ps_sequence)
+        features.max_ps = max(ps_sequence)
+        features.sum_ps = sum(ps_sequence)
+    else:
+        features.min_ps = 0
+        features.mean_ps = 0
+        features.max_ps = 0
+        features.sum_ps = 0
 
-    features.min_ns = min(ns_sequence)
-    features.mean_ns = statistics.mean(ns_sequence)
-    features.max_ns = max(ns_sequence)
-    features.sum_ns = sum(ns_sequence)
+    if len(ns_sequence) > 0:
+        features.min_ns = min(ns_sequence)
+        features.mean_ns = statistics.mean(ns_sequence)
+        features.max_ns = max(ns_sequence)
+        features.sum_ns = sum(ns_sequence)
+    else:
+        features.min_ns = 0
+        features.mean_ns = 0
+        features.max_ns = 0
+        features.sum_ns = 0
     
-    features.min_ppd = min(positive_deviations)
-    features.avg_ppd = statistics.mean(positive_deviations)
-    features.max_ppd = max(positive_deviations)
+    if len(positive_deviations) > 0:
+        features.min_ppd = min(positive_deviations)
+        features.avg_ppd = statistics.mean(positive_deviations)
+        features.max_ppd = max(positive_deviations)
+    else:
+        features.min_ppd = 0
+        features.avg_ppd = 0
+        features.max_ppd = 0
 
-    features.min_npd = min(negative_deviations)
-    features.avg_npd = statistics.mean(negative_deviations)
-    features.max_npd = max(negative_deviations)
-
-    features.pg_count = len(positive_gradients)
-    features.ng_count = len(negative_gradients)
-
-    features.min_pg = min(positive_gradients)
-    features.avg_pg = statistics.mean(positive_gradients)
-    features.max_pg = max(positive_gradients)
-
-    features.min_ng = min(negative_gradients)
-    features.avg_ng = statistics.mean(negative_gradients)
-    features.max_ng = max(negative_gradients)
+    if len(negative_deviations) > 0:
+        features.min_npd = min(negative_deviations)
+        features.avg_npd = statistics.mean(negative_deviations)
+        features.max_npd = max(negative_deviations)
+    else:
+        features.min_npd = 0
+        features.avg_npd = 0
+        features.max_npd = 0
     
-    features.min_tbp_up = min(time_between_peaks_up)
-    features.avg_tbp_up = statistics.mean(time_between_peaks_up)
-    features.max_tbp_up = max(time_between_peaks_up)
+    if len(time_between_peaks_up) > 0:
+        features.min_tbp_up = min(time_between_peaks_up)
+        features.avg_tbp_up = statistics.mean(time_between_peaks_up)
+        features.max_tbp_up = max(time_between_peaks_up)
+    else:
+        features.min_tbp_up = 0
+        features.avg_tbp_up = 0
+        features.max_tbp_up = 0
 
     #TODO: features,min_tbp_down
 
-    features.min_amplitude = min(amplitudes)
-    features.avg_amplitude = statistics.mean(amplitudes)
-    features.max_amplitude = max(amplitudes)
+    if len(amplitudes) > 0:
+        features.min_amplitude = min(amplitudes)
+        features.avg_amplitude = statistics.mean(amplitudes)
+        features.max_amplitude = max(amplitudes)
+    else:
+        features.min_amplitude = 0
+        features.avg_amplitude = 0
+        features.max_amplitude = 0
 
     data_set = sorted(data_set)
     features.q25 = find_quantile(data_set, 0.25)
