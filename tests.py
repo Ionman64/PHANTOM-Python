@@ -1,6 +1,7 @@
 import unittest
 import feature_extractor
 import random
+import numpy as np
 
 class FakeObjectForTesting():
     def __init__(self):
@@ -93,6 +94,14 @@ class FindQuantile(unittest.TestCase):
         self.assertEqual(3.5, feature_extractor.find_quantile(test_arr, 0.25))
         self.assertEqual(5.5, feature_extractor.find_quantile(test_arr, 0.5))
         self.assertEqual(7.5, feature_extractor.find_quantile(test_arr, 0.75))
+    def test_find_quantile_compare_numpy(self):
+        test_arr = [1,2,3,4,5,6,7,8,9,10]
+        self.assertEqual(np.percentile(test_arr, 25, interpolation='midpoint'), 
+            feature_extractor.find_quantile(test_arr, 0.25))
+        self.assertEqual(np.percentile(test_arr, 50, interpolation='midpoint'), 
+            feature_extractor.find_quantile(test_arr, 0.5))
+        self.assertEqual(np.percentile(test_arr, 75, interpolation='midpoint'), 
+            feature_extractor.find_quantile(test_arr, 0.75))
     def test_find_quantile_2(self):
         test_arr = [1,2,3,4,5,6,7,8,9,10]
         self.assertRaises(feature_extractor.InvalidParam, feature_extractor.find_quantile, test_arr, 1.01)
