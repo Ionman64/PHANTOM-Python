@@ -3,7 +3,8 @@ import sys
 import statistics
 import math
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import inspect
 
 EXPECTED_CSV_COLUMNS = 8
 #CSV COLUMNS
@@ -120,12 +121,6 @@ class FeatureVector:
     def keys_order(self):
         return sorted(self.to_dict().keys())
 
-class BadCSVFormat(Exception):
-    def __init__(self, m):
-        self.message = m
-    def __str__(self):
-        return self.message
-
 def extract_all_measures_from_file(log_file_path, time_series_file_path):
     line_num = 0
 
@@ -155,16 +150,16 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
     total_weeks_integration = calculate_week_num(earliest_intergration_date, latest_integration_date) + 1
     total_weeks_commits = calculate_week_num(earliest_author_date, latest_author_date) + 1
     
-    integration_frequency_timeseries = [0]*total_weeks_integration
+    integration_frequency_timeseries = prefilled_array(0, total_weeks_integration)
 
-    integrator_activity_count = [UniqueDeveloperList() for _ in range(total_weeks_integration)]
-    integrator_activity_timeseries = [0]*total_weeks_integration
+    integrator_activity_count = prefilled_array(UniqueDeveloperList(), total_weeks_integration)
+    integrator_activity_timeseries = prefilled_array(0, total_weeks_integration)
 
-    commit_frequency_timeseries = [0]*total_weeks_commits
-    author_activity_count = [UniqueDeveloperList() for _ in range(total_weeks_commits)]
-    author_activity_timeseries = [0]*total_weeks_commits
+    commit_frequency_timeseries = prefilled_array(0, total_weeks_commits)
+    author_activity_count = prefilled_array(UniqueDeveloperList(), total_weeks_commits)
+    author_activity_timeseries = prefilled_array(0, total_weeks_commits)
 
-    merge_frequency_timeseries = [0]*total_weeks_integration
+    merge_frequency_timeseries = prefilled_array(0, total_weeks_integration)
 
 
     with open(log_file_path, 'r', encoding="utf-8") as file:
@@ -441,21 +436,45 @@ def detect_peaks_and_set_features(data_set, features):
     return (return_vector, features)
 
 def find_quantile(data_set, quantile):
-    length = len(data_set) - 1
+    if quantile > 1 or quantile < 0:
+        raise InvalidParam("Quantile must be between 0.00 and 1.00")
+    arr = sorted(data_set)
+    length = len(arr) - 1
     upper_index = math.ceil(length*quantile)
     lower_index = math.floor(length*quantile)
-    upper_value = data_set[upper_index]
-    lower_value = data_set[lower_index]
+    upper_value = arr[upper_index]
+    lower_value = arr[lower_index]
     return (upper_value + lower_value) / 2
 
 def get_monday_timestamp(timestamp):
-    current_date = datetime.fromtimestamp(timestamp)
-    current_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0) #reset the seconds to 0
-    current_date = current_date - timedelta(days=current_date.weekday()) #gives you monday
-    return current_date.timestamp()
+    #gives the timestamp at midnight on the nearest monday BEFORE the provided timestamp
+    SECONDS_IN_A_DAY = 86400
+    current_date = datetime.utcfromtimestamp(timestamp)
+    return int(current_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc).timestamp()) - (current_date.weekday()*SECONDS_IN_A_DAY)
 
 def calculate_week_num(base_time, week_time):
-    base_datetime = datetime.fromtimestamp(int(base_time))
-    week_datetime = datetime.fromtimestamp(int(week_time)) 
+    #calculates the number of weeks after the base time 
+    if base_time > week_time:
+        raise InvalidParam("Base time cannot be higher than the week time")
+    SECS_IN_WEEK = 604800
+    return int(abs((week_time - base_time) / SECS_IN_WEEK))
 
-    return (week_datetime - base_datetime).days // 7
+def prefilled_array(fill_with, size):
+    #produces an array with the 'fill_with' parameter, if it's a class it will instantiate the class for each index before returning
+    if inspect.isclass(fill_with):
+        return [fill_with() for _ in range(size)]
+    return [fill_with]*size
+
+#Errors
+
+class BadCSVFormat(Exception):
+    def __init__(self, m):
+        self.message = m
+    def __str__(self):
+        return self.message
+
+class InvalidParam(Exception):
+    def __init__(self, m):
+        self.message = m
+    def __str__(self):
+        return self.message

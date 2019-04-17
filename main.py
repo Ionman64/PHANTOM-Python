@@ -26,28 +26,19 @@ def cloneRepo(url, location):
 def features(args):
     if len(args) < 3:
         return mustIncludeRepoLocation()
-    
+    if (len(args) < 4):
+        return mustIncludeGitLogLocation()
+    if (len(args) < 5):
+        return mustIncludeOutputLocation()
+    if (len(args) < 6):
+        return mustIncludeTSLocation()
+
     repoDir = args[2]
+    output_git_file = args[3]
+    output_file = args[4]
+    output_ts_file = args[5]
+
     if repoDir == "-log_file":
-        if (len(args) < 4):
-            return mustIncludeGitLogLocation()
-        if (len(args) < 5):
-            return mustIncludeOutputLocation()
-        if (len(args) < 6):
-            return mustIncludeTSLocation()
-        output_git_file = args[3]
-        output_file = args[4]
-        output_ts_file = args[5]
-    else:
-        if (len(args) < 4):
-            return mustIncludeGitLogLocation()
-        if (len(args) < 5):
-            return mustIncludeOutputLocation()
-        if (len(args) < 6):
-            return mustIncludeTSLocation()
-        output_git_file = args[3]
-        output_file = args[4]
-        output_ts_file = args[5]
         generateGitLog(repoDir, output_git_file)
     
     arr = feature_extractor.extract_all_measures_from_file(output_git_file, output_ts_file)
@@ -64,6 +55,7 @@ def features(args):
                 feature_vector_values.append(feature_vector_dict[feature])
             ready_to_write_list = [measure] + feature_vector_values
             csv_writer.writerow(ready_to_write_list)
+    return operationComplete()
     
 def clone(args):
     if len(args) < 3:
