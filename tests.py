@@ -2,6 +2,7 @@ import unittest
 import feature_extractor
 import random
 import numpy as np
+import os
 
 class FakeObjectForTesting():
     def __init__(self):
@@ -114,6 +115,32 @@ class FindQuantile(unittest.TestCase):
         self.assertEqual(1, feature_extractor.find_quantile(test_arr, 0.9))
         self.assertEqual(1, feature_extractor.find_quantile(test_arr, 1))
         self.assertEqual(1, feature_extractor.find_quantile(test_arr, 0))
+
+class FeaturesTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    def tearDown(self):
+        pass
+    def test_feature_extraction_ffmpeg(self):
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)["integrations"]
+        fv = fv_obj.to_dict()
+        self.assertEqual(906, fv["duration"])
+        self.assertEqual(90881, fv["sum_y"])
+        self.assertEqual(643, fv["max_y_pos"])
+        self.assertEqual(433, fv["max_y"])
+        self.assertEqual(420, fv["NG_count"])
+        self.assertEqual(485, fv["PG_count"])
+        self.assertEqual(-33.6714285714286, fv["avg_NG"])
+    def test_feature_extraction_mysql(self):
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "mysql_mysql-server.log", None)["integrations"]
+        fv = fv_obj.to_dict()
+        self.assertEqual(923, fv["duration"])
+        self.assertEqual(140096, fv["sum_y"])
+        self.assertEqual(347, fv["max_y_pos"])
+        self.assertEqual(485, fv["max_y"])
+        self.assertEqual(437, fv["NG_count"])
+        self.assertEqual(485, fv["PG_count"])
+        self.assertEqual(-46.2173913043478, fv["avg_NG"])
 
 if __name__ == "__main__":
     unittest.main() # run all tests

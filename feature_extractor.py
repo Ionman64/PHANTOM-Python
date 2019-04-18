@@ -36,23 +36,28 @@ class UniqueDeveloperList:
 class FeatureVector:
     def __init__(self):
         self.duration = 0
-        self.max_y = 0
+        self.max_y = 0 #Not Implemented
         self.max_y_pos = 0
         self.mean_y = 0.0
         self.sum_y = 0
         self.q25 = None
         self.q50 = None
         self.q75 = None
-        self.std_y = None
+        self.std_y = None #Not Implemented
         self.peak_down = None
         self.peak_none = None
         self.peak_up = None
         self.min_tbp_up = None
         self.avg_tbp_up = None
         self.max_tbp_up = None
-        self.min_amplitude = None
-        self.avg_amplitude = None
-        self.max_amplitude = None
+
+        self.avg_tbp_down = None #Not Implemented
+        self.max_tbp_down = None #Not Implemented
+        self.min_tbp_down = None #Not Implemented
+
+        self.min_amp = None #Not Implemented
+        self.avg_amp = None #Not Implemented
+        self.max_amp = None #Not Implemented
         self.min_ppd = None
         self.avg_ppd = None
         self.max_ppd = None
@@ -78,7 +83,7 @@ class FeatureVector:
     def to_dict(self):
         return {
             "duration":self.duration, 
-            "may_y":self.max_y, 
+            "max_y":self.max_y, 
             "max_y_pos":self.max_y_pos, 
             "mean_y":self.mean_y, 
             "sum_y":self.sum_y, 
@@ -92,9 +97,12 @@ class FeatureVector:
             "min_TBP_up":self.min_tbp_up, 
             "avg_TBP_up":self.avg_tbp_up, 
             "max_TBP_up":self.max_tbp_up, 
-            "min_amplitude":self.min_amplitude, 
-            "avg_amplitude":self.avg_amplitude, 
-            "max_amplitude":self.max_amplitude, 
+            "min_TBP_down":self.min_tbp_down,
+            "max_TBP_down":self.max_tbp_down,
+            "avg_TBP_down":self.avg_tbp_down,
+            "min_amp":self.min_amp, 
+            "avg_amp":self.avg_amp, 
+            "max_amp":self.max_amp, 
             "min_PPD":self.min_ppd, 
             "avg_PPD":self.avg_ppd, 
             "max_PPD":self.max_ppd, 
@@ -163,45 +171,46 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
 
 
     with open(log_file_path, 'r', encoding="utf-8") as file:
-        csv_file_reader = csv.reader(file, delimiter=',', quotechar='"')
-        for commit in csv_file_reader:
-
-            current_integration_date = commit[INTEGRATOR_DATE]
+        csv_file_reader = csv.reader(file, delimiter=',')
+        for (line_num, commit) in enumerate(csv_file_reader):
+            current_integration_date = int(commit[INTEGRATOR_DATE])
             integration_week_number = calculate_week_num(earliest_intergration_date, current_integration_date)
 
-            current_author_date = commit[AUTHOR_DATE]
+            current_author_date = int(commit[AUTHOR_DATE])
             committer_week_number = calculate_week_num(earliest_author_date, current_author_date)
 
             integration_frequency_timeseries[integration_week_number] += 1
 
-            if (integrator_activity_count[integration_week_number].add_developer(commit[INTEGRATOR_EMAIL])):
+            if integrator_activity_count[integration_week_number].add_developer(commit[INTEGRATOR_EMAIL]):
                 integrator_activity_timeseries[integration_week_number] += 1
             
             commit_frequency_timeseries[committer_week_number] += 1
 
-            if (author_activity_count[committer_week_number].add_developer(commit[AUTHOR_EMAIL])):
+            if author_activity_count[committer_week_number].add_developer(commit[AUTHOR_EMAIL]):
                 author_activity_timeseries[committer_week_number] += 1
 
             if " " in commit[PARENT_HASHES]:
                 merge_frequency_timeseries[integration_week_number] += 1
 
-    week_timestamps = []
-    current_timestamp = get_monday_timestamp(earliest_author_date)
-    for i in range(total_weeks_commits):
-        current_timestamp = (datetime.fromtimestamp(current_timestamp) + timedelta(days=7)).timestamp()
-        week_timestamps.append(current_timestamp-1)
+    if time_series_file_path is not None:
+        week_timestamps = []
+        current_timestamp = get_monday_timestamp(earliest_author_date)
+        for i in range(total_weeks_commits):
+            current_timestamp = (datetime.fromtimestamp(current_timestamp) + timedelta(days=7)).timestamp()
+            week_timestamps.append(current_timestamp-1)
 
-    with open(time_series_file_path, "w") as file:
-        csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE)
-        csv_writer.writerow(['filename','date','merges','commits','integrations','commiters','integrators'])
-        for i, _ in enumerate(integration_frequency_timeseries):
-            csv_writer.writerow([os.path.basename(log_file_path), 
-                                datetime.fromtimestamp(week_timestamps[i]).strftime("%Y-%m-%d"), 
-                                merge_frequency_timeseries[i],
-                                commit_frequency_timeseries[i],
-                                integration_frequency_timeseries[i],
-                                author_activity_timeseries[i],
-                                integrator_activity_timeseries[i],
+
+        with open(time_series_file_path, "w") as file:
+            csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE, lineterminator='\n')
+            csv_writer.writerow(['filename','date','merges','commits','integrations','commiters','integrators'])
+            for i, _ in enumerate(integration_frequency_timeseries):
+                csv_writer.writerow([os.path.basename(log_file_path), 
+                                    datetime.fromtimestamp(week_timestamps[i]).strftime("%Y-%m-%d"), 
+                                    merge_frequency_timeseries[i],
+                                    commit_frequency_timeseries[i],
+                                    integration_frequency_timeseries[i],
+                                    author_activity_timeseries[i],
+                                    integrator_activity_timeseries[i],
                                 ])
 
     integration_frequency_feature_vector = calculate_feature_vector_from_time_series(integration_frequency_timeseries)
@@ -222,12 +231,13 @@ def calculate_feature_vector_from_time_series(timeseries):
     features.duration = len(timeseries)
     features.max_y = 0
     features.max_y_pos = 0
-    current_week_index = 0
-    for current_value in timeseries:
+    for (current_week_index, current_value) in enumerate(timeseries):
         if current_value > features.max_y:
             features.max_y = current_value
-            features.max_y_pos = current_week_index
+            features.max_y_pos = current_week_index + 1 #This +1 op could be the source of some issues, it is basically because the output starts from 1 and not 0
+        current_week_index += 1
         features.sum_y += current_value
+
     features.mean_y = features.sum_y / features.duration
     if (len(timeseries) > 2): # < 2 occurs when there is only one week
         features.std_y = statistics.stdev(timeseries) #standard deviation
@@ -285,7 +295,7 @@ def detect_peaks_and_set_features(data_set, features):
         if previous < current:
             current_seq += 1
             upward_trend = True
-            if (downward_trend):
+            if downward_trend:
                 return_vector[index-1] = PEAK_DOWN
                 last_peak_down_value = previous
                 peak_down += 1
@@ -299,6 +309,7 @@ def detect_peaks_and_set_features(data_set, features):
                 last_peak_down = index
                 downward_trend = False
         if previous > current:
+            current_seq += 1
             downward_trend = True
             if upward_trend:
                 amplitudes.append(abs((previous - last_peak_down_value) / features.max_y))
@@ -308,7 +319,7 @@ def detect_peaks_and_set_features(data_set, features):
                 peak_none -= 1
                 ps_sequence.append(current_seq)
                 positive_gradients.append(current - previous_gradient_value)
-                #positive_gradient_value = current
+                previous_gradient_value = current
                 current_seq = 0
                 time_between_peaks_up.append(index - last_peak_up)
                 last_peak_up = index
@@ -417,16 +428,23 @@ def detect_peaks_and_set_features(data_set, features):
         features.avg_tbp_up = 0
         features.max_tbp_up = 0
 
-    #TODO: features,min_tbp_down
+    if len(time_between_peaks_down) > 0:
+        features.min_tbp_down = min(time_between_peaks_down)
+        features.avg_tbp_down = statistics.mean(time_between_peaks_down)
+        features.max_tbp_down = max(time_between_peaks_down)
+    else:
+        features.min_tbp_down = 0
+        features.avg_tbp_up = 0
+        features.max_tbp_down = 0
 
     if len(amplitudes) > 0:
-        features.min_amplitude = min(amplitudes)
-        features.avg_amplitude = statistics.mean(amplitudes)
-        features.max_amplitude = max(amplitudes)
+        features.min_amp = min(amplitudes)
+        features.avg_amp = statistics.mean(amplitudes)
+        features.max_amp = max(amplitudes)
     else:
-        features.min_amplitude = 0
-        features.avg_amplitude = 0
-        features.max_amplitude = 0
+        features.min_amp = 0
+        features.avg_amp = 0
+        features.max_amp = 0
 
     data_set = sorted(data_set)
     features.q25 = find_quantile(data_set, 0.25)

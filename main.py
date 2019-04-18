@@ -44,7 +44,7 @@ def features(args):
     arr = feature_extractor.extract_all_measures_from_file(output_git_file, output_ts_file)
 
     with open(output_file, "w") as file:
-        csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE)
+        csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE, lineterminator='\n')
         ready_to_write_headers = ["measure"] + arr["integrations"].keys_order()
         csv_writer.writerow(ready_to_write_headers)
         for measure in sorted(arr.keys()):
