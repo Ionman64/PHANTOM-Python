@@ -198,8 +198,6 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
         for i in range(total_weeks_commits):
             current_timestamp = (datetime.fromtimestamp(current_timestamp) + timedelta(days=7)).timestamp()
             week_timestamps.append(current_timestamp-1)
-            #week_timestamps.append(current_timestamp)
-
 
         with open(time_series_file_path, "w") as file:
             csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE, lineterminator='\n')
