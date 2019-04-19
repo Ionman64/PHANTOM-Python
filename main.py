@@ -38,10 +38,11 @@ def features(args):
     output_file = args[4]
     output_ts_file = args[5]
 
-    if repoDir == "-log_file":
+    if repoDir != "-log_file":
         generateGitLog(repoDir, output_git_file)
     
-    arr = feature_extractor.extract_all_measures_from_file(output_git_file, output_ts_file)
+    arr = feature_extractor.extract_all_measures_from_file(
+        output_git_file, output_ts_file)
 
     with open(output_file, "w") as file:
         csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE, lineterminator='\n')
