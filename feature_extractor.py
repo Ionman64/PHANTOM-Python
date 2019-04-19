@@ -160,11 +160,11 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
     
     integration_frequency_timeseries = prefilled_array(0, total_weeks_integration)
 
-    integrator_activity_count = prefilled_array(UniqueDeveloperList(), total_weeks_integration)
+    integrator_activity_count = prefilled_array(UniqueDeveloperList, total_weeks_integration)
     integrator_activity_timeseries = prefilled_array(0, total_weeks_integration)
 
     commit_frequency_timeseries = prefilled_array(0, total_weeks_commits)
-    author_activity_count = prefilled_array(UniqueDeveloperList(), total_weeks_commits)
+    author_activity_count = prefilled_array(UniqueDeveloperList, total_weeks_commits)
     author_activity_timeseries = prefilled_array(0, total_weeks_commits)
 
     merge_frequency_timeseries = prefilled_array(0, total_weeks_integration)
@@ -198,6 +198,7 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
         for i in range(total_weeks_commits):
             current_timestamp = (datetime.fromtimestamp(current_timestamp) + timedelta(days=7)).timestamp()
             week_timestamps.append(current_timestamp-1)
+            #week_timestamps.append(current_timestamp)
 
 
         with open(time_series_file_path, "w") as file:
@@ -205,7 +206,7 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
             csv_writer.writerow(['filename','date','merges','commits','integrations','commiters','integrators'])
             for i, _ in enumerate(integration_frequency_timeseries):
                 csv_writer.writerow([os.path.basename(log_file_path), 
-                                    datetime.fromtimestamp(week_timestamps[i]).strftime("%Y-%m-%d"), 
+                                    datetime.fromtimestamp(week_timestamps[i]).astimezone(timezone.utc).strftime("%Y-%m-%d"), 
                                     merge_frequency_timeseries[i],
                                     commit_frequency_timeseries[i],
                                     integration_frequency_timeseries[i],
@@ -218,13 +219,19 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
     commit_frequency_feature_vector = calculate_feature_vector_from_time_series(commit_frequency_timeseries)
     author_activity_feature_vector = calculate_feature_vector_from_time_series(author_activity_timeseries)
     merge_frequency_feature_vector = calculate_feature_vector_from_time_series(merge_frequency_timeseries)
-    return {
+    return ({
         "integrations":integration_frequency_feature_vector, 
         "integrators":integrator_activity_feature_vector, 
         "commits":commit_frequency_feature_vector, 
         "authors":author_activity_feature_vector, 
         "merges":merge_frequency_feature_vector
-    }
+    },{
+        "integrations_ts":integration_frequency_timeseries, 
+        "integrators_ts":integrator_activity_timeseries, 
+        "commits_ts":commit_frequency_timeseries, 
+        "authors_ts":author_activity_timeseries, 
+        "merges_ts":merge_frequency_timeseries
+    })
 
 def calculate_feature_vector_from_time_series(timeseries):
     features = FeatureVector()
@@ -475,7 +482,7 @@ def calculate_week_num(base_time, week_time):
     if base_time > week_time:
         raise InvalidParam("Base time cannot be higher than the week time")
     SECS_IN_WEEK = 604800
-    return int(abs((week_time - base_time) / SECS_IN_WEEK))
+    return int(abs((week_time - base_time))) // SECS_IN_WEEK
 
 def prefilled_array(fill_with, size):
     #produces an array with the 'fill_with' parameter, if it's a class it will instantiate the class for each index before returning

@@ -46,10 +46,10 @@ def features(args):
 
     with open(output_file, "w") as file:
         csv_writer = csv.writer(file, quoting=csv.QUOTE_NONE, lineterminator='\n')
-        ready_to_write_headers = ["measure"] + arr["integrations"].keys_order()
+        ready_to_write_headers = ["measure"] + arr[0]["integrations"].keys_order()
         csv_writer.writerow(ready_to_write_headers)
-        for measure in sorted(arr.keys()):
-            feature_vector = arr[measure]
+        for measure in sorted(arr[0].keys()):
+            feature_vector = arr[0][measure]
             feature_vector_values = []
             feature_vector_dict = feature_vector.to_dict()
             for feature in sorted(feature_vector_dict.keys()):

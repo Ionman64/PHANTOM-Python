@@ -132,7 +132,7 @@ class FeaturesTest(unittest.TestCase):
         return self.oracles[project][self.oracles[project]['measure'] == measure ][feature].values[0]
     
     def test_feature_extraction_ffmpeg_integrations(self):
-        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)["integrations"]
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[0]["integrations"]
         fv = fv_obj.to_dict()
         measure = 'integrations'
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
@@ -144,7 +144,7 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
     
     def test_feature_extraction_ffmpeg_merges(self):
-        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)["merges"]
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[0]["merges"]
         fv = fv_obj.to_dict()
         measure = 'merges'
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
@@ -156,7 +156,7 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
     
     def test_feature_extraction_mysql(self):
-        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "mysql_mysql-server.log", None)["integrations"]
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "mysql_mysql-server.log", None)[0]["integrations"]
         fv = fv_obj.to_dict()
         self.assertEqual(923, fv["duration"])
         self.assertEqual(140096, fv["sum_y"])
@@ -165,6 +165,22 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(437, fv["NG_count"])
         self.assertEqual(485, fv["PG_count"])
         self.assertEqual(-46.2173913043478, fv["avg_NG"])
+
+
+class TimeSeriesTest(unittest.TestCase):
+    oracles = dict()
+    
+    def setUp(self):
+        self.oracles['FFmpeg'] = pd.read_csv('./test_data/FFmpeg_FFmpeg-ts.csv')
+    
+    def tearDown(self):
+        pass
+    
+    def test_ffmpeg_integrations(self):
+        res_list = feature_extractor.extract_all_measures_from_file(
+            "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["integrations_ts"]
+        oracle_ts = self.oracles['FFmpeg']['integrations'].tolist()
+        self.assertListEqual(res_list, oracle_ts)
 
 if __name__ == "__main__":
     unittest.main() # run all tests
