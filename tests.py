@@ -3,6 +3,7 @@ import feature_extractor
 import random
 import numpy as np
 import os
+import pandas as pd
 
 class FakeObjectForTesting():
     def __init__(self):
@@ -117,20 +118,43 @@ class FindQuantile(unittest.TestCase):
         self.assertEqual(1, feature_extractor.find_quantile(test_arr, 0))
 
 class FeaturesTest(unittest.TestCase):
+    oracles = dict()
+    
     def setUp(self):
-        pass
+        self.oracles['FFmpeg'] = pd.read_csv('./test_data/FFmpeg_FFmpeg-features.csv')
+    
     def tearDown(self):
         pass
-    def test_feature_extraction_ffmpeg(self):
+    
+    def feature_oracle(self, project, measure, feature):
+        if project not in self.oracles.keys():
+            raise Exception(f"Features for {project} were not loaded!")
+        return self.oracles[project][self.oracles[project]['measure'] == measure ][feature].values[0]
+    
+    def test_feature_extraction_ffmpeg_integrations(self):
         fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)["integrations"]
         fv = fv_obj.to_dict()
-        self.assertEqual(906, fv["duration"])
-        self.assertEqual(90881, fv["sum_y"])
-        self.assertEqual(643, fv["max_y_pos"])
-        self.assertEqual(433, fv["max_y"])
-        self.assertEqual(420, fv["NG_count"])
-        self.assertEqual(485, fv["PG_count"])
-        self.assertEqual(-33.6714285714286, fv["avg_NG"])
+        measure = 'integrations'
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'sum_y'), fv["sum_y"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y_pos'), fv["max_y_pos"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
+    
+    def test_feature_extraction_ffmpeg_merges(self):
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "FFmpeg_FFmpeg.log", None)["merges"]
+        fv = fv_obj.to_dict()
+        measure = 'merges'
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'sum_y'), fv["sum_y"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y_pos'), fv["max_y_pos"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
+    
     def test_feature_extraction_mysql(self):
         fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "mysql_mysql-server.log", None)["integrations"]
         fv = fv_obj.to_dict()
