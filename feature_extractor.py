@@ -90,7 +90,7 @@ class FeatureVector:
             "q25":self.q25, 
             "q50":self.q50, 
             "q75":self.q75, 
-            "std_y":self.std_y, 
+            "std":self.std_y, 
             "peak_down":self.peak_down, 
             "peak_none":self.peak_none, 
             "peak_up":self.peak_up, 
