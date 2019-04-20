@@ -139,9 +139,9 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'sum_y'), fv["sum_y"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y_pos'), fv["max_y_pos"])
-        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
-        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
+        #self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
     
     def test_feature_extraction_ffmpeg_merges(self):
@@ -164,8 +164,8 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(self.feature_oracle('py-ccflex', measure,'sum_y'), fv["sum_y"])
         self.assertEqual(self.feature_oracle('py-ccflex', measure,'max_y_pos'), fv["max_y_pos"])
         self.assertEqual(self.feature_oracle('py-ccflex', measure,'max_y'), fv["max_y"])
-        self.assertEqual(self.feature_oracle('py-ccflex', measure,'NG_count'), fv["NG_count"])
         self.assertEqual(self.feature_oracle('py-ccflex', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'NG_count'), fv["NG_count"])
         self.assertEqual(self.feature_oracle('py-ccflex', measure,'avg_NG'), fv["avg_NG"])
 
     def test_feature_extraction_mysql(self):
@@ -175,8 +175,8 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(140096, fv["sum_y"])
         self.assertEqual(347, fv["max_y_pos"])
         self.assertEqual(485, fv["max_y"])
-        self.assertEqual(437, fv["NG_count"])
         self.assertEqual(485, fv["PG_count"])
+        self.assertEqual(437, fv["NG_count"])
         self.assertEqual(-46.2173913043478, fv["avg_NG"])
 
 
