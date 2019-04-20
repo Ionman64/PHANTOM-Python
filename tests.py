@@ -195,6 +195,12 @@ class TimeSeriesTest(unittest.TestCase):
         oracle_ts = self.oracles['FFmpeg']['integrations'].tolist()
         self.assertListEqual(res_list, oracle_ts)
 
+    def test_ffmpeg_merges(self):
+        res_list = feature_extractor.extract_all_measures_from_file(
+            "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["merges_ts"]
+        oracle_ts = self.oracles['FFmpeg']['merges'].tolist()
+        self.assertListEqual(res_list, oracle_ts)
+
 if __name__ == "__main__":
     unittest.main() # run all tests
 else:
