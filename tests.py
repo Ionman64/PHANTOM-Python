@@ -122,6 +122,7 @@ class FeaturesTest(unittest.TestCase):
     
     def setUp(self):
         self.oracles['FFmpeg'] = pd.read_csv('./test_data/FFmpeg_FFmpeg-features.csv')
+        self.oracles['py-ccflex'] = pd.read_csv('./test_data/py-ccflex-features.csv')
     
     def tearDown(self):
         pass
@@ -150,11 +151,23 @@ class FeaturesTest(unittest.TestCase):
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'duration'), fv["duration"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'sum_y'), fv["sum_y"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y_pos'), fv["max_y_pos"])
-        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
-        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'NG_count'), fv["NG_count"])
+        self.assertEqual(self.feature_oracle('FFmpeg', measure,'max_y'), fv["max_y"])
         self.assertEqual(self.feature_oracle('FFmpeg', measure,'avg_NG'), fv["avg_NG"])
     
+    def test_feature_extraction_pyccflex_integrations(self):
+        fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "py-ccflex.log", None)[0]["integrations"]
+        fv = fv_obj.to_dict()
+        measure = 'integrations'
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'duration'), fv["duration"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'sum_y'), fv["sum_y"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'max_y_pos'), fv["max_y_pos"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'max_y'), fv["max_y"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'NG_count'), fv["NG_count"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'PG_count'), fv["PG_count"])
+        self.assertEqual(self.feature_oracle('py-ccflex', measure,'avg_NG'), fv["avg_NG"])
+
     def test_feature_extraction_mysql(self):
         fv_obj = feature_extractor.extract_all_measures_from_file("test_data" + os.sep + "mysql_mysql-server.log", None)[0]["integrations"]
         fv = fv_obj.to_dict()
