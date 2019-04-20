@@ -293,6 +293,7 @@ def detect_peaks_and_set_features(data_set, features):
     upward_trend = False
     downward_trend = False
     last_peak_down_value = data_set[0]
+    #previous_gradient_value = data_set[0] #FIX
     while index < array_length:
         previous = data_set[index-1]
         current = data_set[index]
@@ -307,8 +308,8 @@ def detect_peaks_and_set_features(data_set, features):
                 peak_none -= 1
                 ns_sequence.append(current_seq)
                 negative_deviations.append(previous - mean)
-                negative_gradients.append(current - previous_gradient_value)
-                previous_gradient_value = current
+                negative_gradients.append(current - previous_gradient_value) # FIX Move to previous > current
+                previous_gradient_value = current # FIX REMOVE FROM HERE
                 current_seq = 0
                 time_between_peaks_down.append(index - last_peak_down)
                 last_peak_down = index
@@ -323,12 +324,13 @@ def detect_peaks_and_set_features(data_set, features):
                 peak_up += 1
                 peak_none -= 1
                 ps_sequence.append(current_seq)
-                positive_gradients.append(current - previous_gradient_value)
-                previous_gradient_value = current
+                positive_gradients.append(current - previous_gradient_value) # FIX Move to previous < current
+                previous_gradient_value = current # FIX REMOVE FROM HERE
                 current_seq = 0
                 time_between_peaks_up.append(index - last_peak_up)
                 last_peak_up = index
                 upward_trend = False
+        #previous_gradient_value = current # FIX
         index += 1
     if upward_trend:
         ns_sequence.append(current_seq)
