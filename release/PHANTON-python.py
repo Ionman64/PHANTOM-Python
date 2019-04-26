@@ -628,7 +628,7 @@ def get_monday_timestamp(timestamp):
     #gives the timestamp at midnight on the nearest monday BEFORE the provided timestamp
     SECONDS_IN_A_DAY = 86400
     current_date = datetime.utcfromtimestamp(timestamp)
-    return int(current_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc).timestamp()) - ((current_date.weekday()+1)*SECONDS_IN_A_DAY)
+    return int(current_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc).timestamp()) - (current_date.weekday()*SECONDS_IN_A_DAY+2*3600)
 
 def calculate_week_num(base_time, week_time):
     #calculates the number of weeks after the base time 
