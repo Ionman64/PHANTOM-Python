@@ -193,13 +193,41 @@ class TimeSeriesTest(unittest.TestCase):
         res_list = feature_extractor.extract_all_measures_from_file(
             "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["integrations_ts"]
         oracle_ts = self.oracles['FFmpeg']['integrations'].tolist()
-        self.assertListEqual(res_list, oracle_ts)
+        self.assertEqual(len(res_list), len(oracle_ts))
+        for i, res in enumerate(res_list):
+            self.assertEqual(res, oracle_ts[i], f'It is {res} but should be {oracle_ts[i]} at {i}')
 
     def test_ffmpeg_merges(self):
         res_list = feature_extractor.extract_all_measures_from_file(
             "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["merges_ts"]
         oracle_ts = self.oracles['FFmpeg']['merges'].tolist()
-        self.assertListEqual(res_list, oracle_ts)
+        self.assertEqual(len(res_list), len(oracle_ts))
+        for i, res in enumerate(res_list):
+            self.assertEqual(res, oracle_ts[i], f'It is {res} but should be {oracle_ts[i]} at {i}')
+
+    def test_ffmpeg_commits(self):
+        res_list = feature_extractor.extract_all_measures_from_file(
+            "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["commits_ts"]
+        oracle_ts = self.oracles['FFmpeg']['commits'].tolist()
+        self.assertEqual(len(res_list), len(oracle_ts))
+        for i, res in enumerate(res_list):
+            self.assertEqual(res, oracle_ts[i], f'It is {res} but should be {oracle_ts[i]} at {i}')
+
+    def test_ffmpeg_integrators(self):
+        res_list = feature_extractor.extract_all_measures_from_file(
+            "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["integrators_ts"]
+        oracle_ts = self.oracles['FFmpeg']['integrators'].tolist()
+        self.assertEqual(len(res_list), len(oracle_ts))
+        for i, res in enumerate(res_list):
+            self.assertEqual(res, oracle_ts[i], f'It is {res} but should be {oracle_ts[i]} at {i}')
+
+    def test_ffmpeg_commiters(self):
+        res_list = feature_extractor.extract_all_measures_from_file(
+            "test_data" + os.sep + "FFmpeg_FFmpeg.log", None)[1]["authors_ts"]
+        oracle_ts = self.oracles['FFmpeg']['commiters'].tolist()
+        self.assertEqual(len(res_list), len(oracle_ts))
+        for i, res in enumerate(res_list):
+            self.assertEqual(res, oracle_ts[i], f'It is {res} but should be {oracle_ts[i]} at {i}')
 
 if __name__ == "__main__":
     unittest.main() # run all tests
