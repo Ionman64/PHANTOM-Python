@@ -7,6 +7,7 @@ import os
 import feature_extractor
 import csv
 
+
 def currentFileName():
     return os.path.basename(__file__)
 
