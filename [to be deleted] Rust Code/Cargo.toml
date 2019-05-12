@@ -1,0 +1,10 @@
+[package]
+name = "feature_extractor"
+version = "0.1.0"
+authors = ["Ionman64 <PeterPickerill2014@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+csv = "1"
+chrono = "0.4.6"
+serde = { version = "1.0", features = ["derive"] }

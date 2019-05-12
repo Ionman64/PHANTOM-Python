@@ -143,10 +143,10 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
             line_num += 1
             if len(commit) != EXPECTED_CSV_COLUMNS:
                 raise BadCSVFormat("line %i has an incorrect number of columns" % line_num)
-            current_integration_date = int(commit[INTEGRATOR_DATE])
+            current_integration_date = int(commit[INTEGRATOR_DATE].replace('\"', ""))
             earliest_intergration_date = min([current_integration_date, earliest_intergration_date])
             latest_integration_date = max([current_integration_date, latest_integration_date])
-            current_author_date = int(commit[AUTHOR_DATE])
+            current_author_date = int(commit[AUTHOR_DATE].replace('\"', ""))
             earliest_author_date = min([current_author_date, earliest_author_date])
             latest_author_date = max([current_author_date, latest_author_date])
 
@@ -173,10 +173,10 @@ def extract_all_measures_from_file(log_file_path, time_series_file_path):
     with open(log_file_path, 'r', encoding="utf-8") as file:
         csv_file_reader = csv.reader(file, quoting=csv.QUOTE_NONE, delimiter=',')
         for (line_num, commit) in enumerate(csv_file_reader):
-            current_integration_date = int(commit[INTEGRATOR_DATE])
+            current_integration_date = int(commit[INTEGRATOR_DATE].replace('\"', ""))
             integration_week_number = calculate_week_num(earliest_intergration_date, current_integration_date)
 
-            current_author_date = int(commit[AUTHOR_DATE])
+            current_author_date = int(commit[AUTHOR_DATE].replace('\"', ""))
             committer_week_number = calculate_week_num(earliest_author_date, current_author_date)
 
             integration_frequency_timeseries[integration_week_number] += 1
