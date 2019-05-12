@@ -26,7 +26,7 @@ const PEAK_NONE:i8 = 0;
 
 pub fn main() {
     if env::args().len() == 1 {
-        panic!("Usage: feature_extractor git_log_location output_csv_file_location output_time_series");
+        panic!("Usage: feature_extractor git_log_location output_csv_file_location");
     }
     let mut input_file_string = String::new();
     let mut output_file_string = String::new();
@@ -35,15 +35,13 @@ pub fn main() {
         match index {
             1=> {input_file_string = String::from(argument)},
             2=> {output_file_string = String::from(argument)},
-            3=> {output_time_series_string = String::from(argument)}
             _=> {panic!("Unknown arguement at position {}", index)}
         };
     }
     let input_file = Path::new(&input_file_string);
     let output_file = Path::new(&output_file_string);
-    let output_time_series = Path::new(&output_time_series_string);
 
-    if extract_all_measures_from_file(input_file, output_file, output_time_series) {
+    if extract_all_measures_from_file(input_file, output_file) {
         println!("Done!");
     }
     else {
@@ -166,7 +164,7 @@ impl FeatureVector {
     }
 }
 
-pub fn extract_all_measures_from_file(log_file_path: &Path, output_file: &Path, output_time_series: &Path) -> bool {
+pub fn extract_all_measures_from_file(log_file_path: &Path, output_file: &Path) -> bool {
     let file_name = log_file_path.to_str().unwrap();
     let mut csv_log_reader = ReaderBuilder::new()
         .has_headers(false)
